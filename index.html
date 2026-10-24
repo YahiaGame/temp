@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0d12;
+      --panel: #12151d;
+      --field: #0d1017;
+      --border: #292e3b;
+      --text: #f3f5fa;
+      --muted: #969eaf;
+      --accent: #a5b4fc;
+      --accent-strong: #818cf8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px 16px;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(99,102,241,.13), transparent 38%),
+        radial-gradient(ellipse at 90% 90%, rgba(56,189,248,.08), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .contact-card {
+      width: min(100%, 560px);
+      padding: clamp(24px, 5vw, 42px);
+      background: rgba(18, 21, 29, .94);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 14px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent-strong);
+      box-shadow: 0 0 14px rgba(129,140,248,.7);
+    }
+    h1 { margin: 0; font-size: clamp(30px, 6vw, 42px); line-height: 1.1; letter-spacing: -.04em; }
+    .intro { margin: 14px 0 30px; max-width: 42ch; color: var(--muted); }
+    form { display: grid; gap: 19px; }
+    .field { display: grid; gap: 8px; }
+    label { font-size: 13px; font-weight: 650; color: #dce0ea; }
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 13px 15px;
+      background: var(--field);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    input { height: 49px; }
+    textarea { min-height: 150px; resize: vertical; }
+    input::placeholder, textarea::placeholder { color: #687184; }
+    input:focus, textarea:focus {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 3px rgba(129,140,248,.15);
+      background: #0f121b;
+    }
+    button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      min-height: 50px;
+      margin-top: 3px;
+      padding: 13px 18px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #111322;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: transform .18s, background .18s, box-shadow .18s;
+    }
+    button:hover { background: #c7d2fe; box-shadow: 0 8px 28px rgba(129,140,248,.18); }
+    button:active { transform: scale(.99); }
+    button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+    .status { min-height: 1.4em; margin: 0; color: var(--muted); font-size: 13px; }
+    .footer { margin: 20px 0 0; text-align: center; color: #737c8f; font-size: 12px; }
+    @media (max-width: 420px) { .contact-card { border-radius: 18px; } }
+  </style>
+</head>
+<body>
+  <main class="contact-card">
+    <p class="eyebrow">Get in touch</p>
+    <h1>Let’s talk.</h1>
+    <p class="intro">Have a question or a project in mind? Send a message using the form below.</p>
+
+    <form id="contact-form" action="https://formspree.io/f/xaeenvyy" method="POST">
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="Your name" required maxlength="100">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required maxlength="254">
+      </div>
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" placeholder="Tell me a little about what you need..." required maxlength="5000"></textarea>
+      </div>
+      <button type="submit">Send message <span aria-hidden="true">↗</span></button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </form>
+    <p class="footer">Your details are used only to respond to your message.</p>
+  </main>
+
+  <script>
+    const form = document.getElementById('contact-form');
+    const status = document.getElementById('status');
+    const button = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!form.reportValidity()) return;
+
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.textContent = 'Sending...';
+      status.textContent = '';
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: {
+            Accept: 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Message delivery failed.');
+        }
+
+        status.textContent =
+          'Thanks! Your message has been sent successfully.';
+        form.reset();
+      } catch (error) {
+        status.textContent =
+          'Sorry, your message could not be sent. Please try again.';
+      } finally {
+        button.disabled = false;
+        button.innerHTML = originalText;
+      }
+    });
+  </script>
+</body>
+</html>
